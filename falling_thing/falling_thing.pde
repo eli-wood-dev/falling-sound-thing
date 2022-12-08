@@ -3,18 +3,37 @@ import ddf.minim.*;
 PVector pos;
 PVector siz;
 PVector targetPos;
+PVector targetSize;
 int maxDist = 200;
 Minim minim;
+boolean spacePressed = false;
+int currentColour = 3;
+int currentMessage = 3;
+
+String [] messages = {
+  "Perfect!",
+  "Close!",
+  "Miss!",
+  ""
+};
+
+color [] colours = {
+  color(0, 255, 0, 100),
+  color(150, 150, 0, 100),
+  color(255, 0, 0, 100),
+  color(0, 0, 255, 100)
+};
 
 AudioPlayer [] sound = new AudioPlayer[3];
 
 void setup() {
   size(500, 750);
   noStroke();
+  textSize(25);
   pos = new PVector(width/2, 0);
-  siz = new PVector(200, 100);
+  siz = new PVector(100, 100);
+  targetSize = new PVector(100, 100);
   targetPos = new PVector(width/2, height - 100);
-  
   minim = new Minim(this);
   for (int i = 0; i < sound.length; i++) {
     sound[i] = minim.loadFile("sound"+i+".wav");
@@ -22,23 +41,38 @@ void setup() {
 }
 
 void keyPressed() {
-  if (key == ' ') {
+  if (key == ' '  && spacePressed == false) {
+    spacePressed = true;
     int m;
-    if (dist(pos.x, pos.y, targetPos.x, targetPos.y) > maxDist) {
-      m = sound.length-1;
-    } else {
-      m = round(map(dist(pos.x, pos.y, targetPos.x, targetPos.y), 0, maxDist, 0, sound.length-1));
-    }
+    m = assess(pos);
     println(m);
     sound[m].play();
     sound[m].rewind();
+    currentColour = m;
+    currentMessage = m;
   }
 }
+
+int assess(PVector p) {
+  float limit = targetSize.y/2;
+  float dist = targetPos.dist(p);
+  int value = 0;
+  
+  if (dist > limit) {
+    value = sound.length-1;
+  } else {
+    value = round(map(dist, 0, limit, 0, sound.length-1));
+  }
+  return value;
+}
+
 
 void draw () {
   pos.y += 5;
   if (pos.y - siz.y >= height) {
     pos.y = 0 - siz.y;
+    spacePressed = false;
+    currentColour = 3;
   }
   
   
@@ -46,8 +80,10 @@ void draw () {
   background(0);
   fill(255, 0, 0);
   ellipse(targetPos.x, targetPos.y, siz.x, siz.y);
-  fill(255);
+  fill(colours[currentColour]);
   ellipse(pos.x, pos.y, siz.x, siz.y);
+  fill(255);
+  text(messages[currentMessage], width - 100, 25);
 }
 
 void stop()
