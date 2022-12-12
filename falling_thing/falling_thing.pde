@@ -62,6 +62,7 @@ void keyPressed() {
     } else {
       m = assess(getLowestFaller(fallers, pressed).pos);
       currentColours.set(getLowestFallerNum(fallers, pressed), m);
+      pressed.set(getLowestFallerNum(fallers, pressed), true);
     }
     println(m);
     sound[m].play();
@@ -108,7 +109,6 @@ Faller getLowestFaller(ArrayList<Faller> fallers, ArrayList<Boolean> pressed) {
   
   for (int i = 0; i < fallers.size(); i++) {
     if (fallers.get(i).pos.y == max) {
-      pressed.set(i, true);
       return fallers.get(i);
     }
   }
@@ -128,7 +128,6 @@ int getLowestFallerNum(ArrayList<Faller> fallers, ArrayList<Boolean> pressed) {
   
   for (int i = 0; i < fallers.size(); i++) {
     if (fallers.get(i).pos.y == max) {
-      pressed.set(i, true);
       return i;
     }
   }
