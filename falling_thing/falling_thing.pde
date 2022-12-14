@@ -56,19 +56,27 @@ void setup() {
 
 void keyPressed() {
   if (key == ' ') {
-    int m;
-    if (getLowestFaller(fallers, pressed) == null) {
-      m = 2;
-    } else {
-      m = assess(getLowestFaller(fallers, pressed).pos);
-      currentColours.set(getLowestFallerNum(fallers, pressed), m);
-      pressed.set(getLowestFallerNum(fallers, pressed), true);
-    }
-    println(m);
-    sound[m].play();
-    sound[m].rewind();
-    currentMessage = m;
+    checkFaller();
   }
+}
+
+void mousePressed() {
+  checkFaller();
+}
+
+void checkFaller () {
+  int m;
+  if (getLowestFaller(fallers, pressed) == null) {
+    m = 2;
+  } else {
+    m = assess(getLowestFaller(fallers, pressed).pos);
+    currentColours.set(getLowestFallerNum(fallers, pressed), m);
+    pressed.set(getLowestFallerNum(fallers, pressed), true);
+  }
+  println(m);
+  sound[m].play();
+  sound[m].rewind();
+  currentMessage = m;
 }
 
 int assess(PVector p) {
