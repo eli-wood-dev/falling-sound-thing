@@ -174,13 +174,13 @@ void draw () {
   text(messages[currentMessage], width - 100, 25);
   
   for (int i = 0; i < fallers.size(); i++) {
-    fallers.get(i).fall(colours[currentColours.get(i)]);
-    closingRing(targetPos, fallers.get(i).pos);
     if (fallers.get(i).isGone() == true) {
       fallers.remove(i);
       currentColours.remove(i);
       pressed.remove(i);
     }
+    fallers.get(i).fall(colours[currentColours.get(i)]);
+    closingRing(targetPos, fallers.get(i).pos);
   }
 }
 
