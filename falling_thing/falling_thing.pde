@@ -9,6 +9,7 @@ int maxDist = 200;
 Minim minim;
 int currentColour = 3;
 int currentMessage = 3;
+int fallerFrequency = 30;
 
 String [] messages = {
   "Perfect!",
@@ -154,7 +155,7 @@ void draw () {
   }
   */
   
-  if (frameCount % 60 == 0) {
+  if (frameCount % fallerFrequency == 0) {
     fallers.add(new Faller(pos, siz));
     currentColours.add(3);
     pressed.add(false);
@@ -175,6 +176,11 @@ void draw () {
   for (int i = 0; i < fallers.size(); i++) {
     fallers.get(i).fall(colours[currentColours.get(i)]);
     closingRing(targetPos, fallers.get(i).pos);
+    if (fallers.get(i).isGone() == true) {
+      fallers.remove(i);
+      currentColours.remove(i);
+      pressed.remove(i);
+    }
   }
 }
 
