@@ -1,5 +1,7 @@
 import ddf.minim.*;
 
+BufferedReader reader;
+
 PVector pos;
 PVector siz;
 PVector targetPos;
@@ -9,7 +11,15 @@ int maxDist = 200;
 Minim minim;
 int currentColour = 3;
 int currentMessage = 3;
-int fallerFrequency = 30;
+//int fallerFrequency = 30;
+
+int nextSpawnPoint = 0;
+
+boolean fileRead = false;
+boolean gameOver = false;
+boolean spawn = true;
+
+int score = 0;
 
 String [] messages = {
   "Perfect!",
@@ -36,13 +46,16 @@ ArrayList<Faller> fallers;
 ArrayList<Integer>currentColours;
 ArrayList<Boolean>pressed;
 
+ArrayList<Integer> spawnPoints;
+
 AudioPlayer [] sound = new AudioPlayer[3];
 
 void setup() {
   fallers = new ArrayList<Faller>();
   currentColours = new ArrayList<Integer>();
   pressed = new ArrayList<Boolean>();
-  size(500, 750);
+  //size(500, 750);
+  fullScreen();
   textSize(25);
   pos = new PVector(width/2, 0);
   siz = new PVector(100, 100);
@@ -53,6 +66,8 @@ void setup() {
   for (int i = 0; i < sound.length; i++) {
     sound[i] = minim.loadFile("sound"+i+".wav");
   }
+  
+  reader = createReader("input.txt");
 }
 
 void keyPressed() {
@@ -78,6 +93,7 @@ void checkFaller () {
   sound[m].play();
   sound[m].rewind();
   currentMessage = m;
+  score += invert(m) * 100;
 }
 
 int assess(PVector p) {
@@ -85,9 +101,9 @@ int assess(PVector p) {
   int value = 0;
   
   if (dist > maxDist) {
-    value = sound.length-1;
+    value = 2;
   } else {
-    value = round(map(dist, 0, maxDist, 0, sound.length-1));
+    value = round(map(dist, 0, maxDist, 0, 2));
   }
   return value;
 }
@@ -146,19 +162,16 @@ int getLowestFallerNum(ArrayList<Faller> fallers, ArrayList<Boolean> pressed) {
 }
 
 void draw () {
-  /*
-  pos.y += 5;
-  if (pos.y - siz.y >= height) {
-    pos.y = 0 - siz.y;
-    spacePressed = false;
-    currentColour = 3;
+  if(!fileRead) {
+    spawnPoints = readFile();
   }
-  */
   
-  if (frameCount % fallerFrequency == 0) {
-    fallers.add(new Faller(pos, siz));
-    currentColours.add(3);
-    pressed.add(false);
+  if(spawn) {
+    addFaller();
+  }
+  
+  if(fallers.size() == 0 && !spawn) {
+    gameOver = true;
   }
   
   background(0);
@@ -172,16 +185,32 @@ void draw () {
   
   fill(255);
   text(messages[currentMessage], width - 100, 25);
+  text(score, width - 100, 50);
   
-  for (int i = 0; i < fallers.size(); i++) {
-    if (fallers.get(i).isGone() == true) {
-      fallers.remove(i);
-      currentColours.remove(i);
-      pressed.remove(i);
+  if(!gameOver) {
+    for (int i = 0; i < fallers.size(); i++) {
+      if (fallers.get(i).isGone() == true) {
+        fallers.remove(i);
+        currentColours.remove(i);
+        pressed.remove(i);
+      }
+      fallers.get(i).fall(colours[currentColours.get(i)]);
+      closingRing(targetPos, fallers.get(i).pos);
     }
-    fallers.get(i).fall(colours[currentColours.get(i)]);
-    closingRing(targetPos, fallers.get(i).pos);
   }
+}
+
+int invert(int points) { //makes it so hit give 2 and misses give 0
+  int newPoints = 1;
+  
+  if(points == 0) {
+    newPoints = 2;
+  }
+  if(points == 2) {
+    newPoints = 0;
+  }
+  
+  return newPoints;
 }
 
 void stop()
@@ -191,4 +220,45 @@ void stop()
   }
   minim.stop();
   super.stop();
+}
+
+void addFaller() {
+  if(spawnPoints.size() == 0) {
+    spawn = false;
+  } else if (spawnPoints.get(0) != 0 && frameCount % spawnPoints.get(0) == 0) {
+    fallers.add(new Faller(pos, siz));
+    currentColours.add(3);
+    pressed.add(false);
+    spawnPoints.remove(0);
+  } else if(spawnPoints.get(0) == 0) {
+    fallers.add(new Faller(pos, siz));
+    currentColours.add(3);
+    pressed.add(false);
+    spawnPoints.remove(0);
+  }
+}
+
+ArrayList<Integer> readFile() {
+  ArrayList<Integer> data = new ArrayList<Integer>();
+  String line;
+  
+  while(true) {
+    try{
+      line = reader.readLine();
+    } catch(Exception e) {
+      println(e);
+      line = null;
+    }
+    if(line == null) {
+      break;
+    } else {
+      try {
+        data.add(Integer.parseInt(line));
+      } catch(Exception e) {
+        println(e);
+      }
+    }
+  }
+  fileRead = true;
+  return data;
 }
