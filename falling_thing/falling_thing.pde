@@ -19,7 +19,10 @@ boolean fileRead = false;
 boolean gameOver = false;
 boolean spawn = true;
 
-int score = 0;
+float score = 0;
+float scoreMultiplier = 1;
+int hitStreak = 0;
+int currentBar = 2; //current colour for the bar
 
 String [] messages = {
   "Perfect!",
@@ -62,12 +65,12 @@ void setup() {
   targetSize = new PVector(100, 100);
   targetPos = new PVector(width/2, height - 100);
   otherCircleSize = new PVector(0, 0);
+  
+  //loads sounds
   minim = new Minim(this);
   for (int i = 0; i < sound.length; i++) {
     sound[i] = minim.loadFile("sound"+i+".wav");
   }
-  
-  reader = createReader("input.txt");
 }
 
 void keyPressed() {
@@ -80,7 +83,7 @@ void mousePressed() {
   checkFaller();
 }
 
-void checkFaller () {
+void checkFaller () { //checks if a faller can be pressed and how far it is
   int m;
   if (getLowestFaller(fallers, pressed) == null) {
     m = 2;
@@ -89,14 +92,26 @@ void checkFaller () {
     currentColours.set(getLowestFallerNum(fallers, pressed), m);
     pressed.set(getLowestFallerNum(fallers, pressed), true);
   }
-  println(m);
   sound[m].play();
   sound[m].rewind();
   currentMessage = m;
-  score += invert(m) * 100;
+  score += invert(m) * 100 * scoreMultiplier;
+  
+  switch (invert(m)) {
+    case 0:
+      hitStreak--;
+      break;
+     case 1:
+       //do nothing
+       break;
+    case 2:
+      hitStreak++;
+      break;
+  }
+  hitStreak = constrain(hitStreak, 0, 4);
 }
 
-int assess(PVector p) {
+int assess(PVector p) { //assesses how close to the target a falling object is
   float dist = targetPos.dist(p);
   int value = 0;
   
@@ -108,7 +123,7 @@ int assess(PVector p) {
   return value;
 }
 
-void closingRing(PVector posA, PVector p) {
+void closingRing(PVector posA, PVector p) { //creates the ring that closes around the center circle
   if (p.y < targetPos.y) {
     PVector sizA = new PVector(0, 0);
     
@@ -123,7 +138,7 @@ void closingRing(PVector posA, PVector p) {
   }
 }
 
-Faller getLowestFaller(ArrayList<Faller> fallers, ArrayList<Boolean> pressed) {
+Faller getLowestFaller(ArrayList<Faller> fallers, ArrayList<Boolean> pressed) { //finds the lowest falling object that isn't offscreen
   float max = 0;
   
   for (int i = 0; i < fallers.size(); i++) {
@@ -142,7 +157,7 @@ Faller getLowestFaller(ArrayList<Faller> fallers, ArrayList<Boolean> pressed) {
   return null;
 }
 
-int getLowestFallerNum(ArrayList<Faller> fallers, ArrayList<Boolean> pressed) {
+int getLowestFallerNum(ArrayList<Faller> fallers, ArrayList<Boolean> pressed) { //gets the number of the lowest falling object that isn't offscreen
   float max = 0;
   
   for (int i = 0; i < fallers.size(); i++) {
@@ -162,41 +177,8 @@ int getLowestFallerNum(ArrayList<Faller> fallers, ArrayList<Boolean> pressed) {
 }
 
 void draw () {
-  if(!fileRead) {
-    spawnPoints = readFile();
-  }
-  
-  if(spawn) {
-    addFaller();
-  }
-  
-  if(fallers.size() == 0 && !spawn) {
-    gameOver = true;
-  }
-  
-  background(0);
-  strokeWeight(0);
-  fill(255, 0, 0);
-  ellipse(targetPos.x, targetPos.y, siz.x, siz.y);
-  /*
-  fill(colours[currentColour]);
-  ellipse(pos.x, pos.y, siz.x, siz.y);
-  */
-  
-  fill(255);
-  text(messages[currentMessage], width - 100, 25);
-  text(score, width - 100, 50);
-  
   if(!gameOver) {
-    for (int i = 0; i < fallers.size(); i++) {
-      if (fallers.get(i).isGone() == true) {
-        fallers.remove(i);
-        currentColours.remove(i);
-        pressed.remove(i);
-      }
-      fallers.get(i).fall(colours[currentColours.get(i)]);
-      closingRing(targetPos, fallers.get(i).pos);
-    }
+    playGame();
   }
 }
 
@@ -213,7 +195,7 @@ int invert(int points) { //makes it so hit give 2 and misses give 0
   return newPoints;
 }
 
-void stop()
+void stop() //closes all sounds
 {
   for (int i = 0; i < sound.length; i++) {
     sound[i].close();
@@ -222,7 +204,7 @@ void stop()
   super.stop();
 }
 
-void addFaller() {
+void addFaller() { //adds a new falling object at specific intervals
   if(spawnPoints.size() == 0) {
     spawn = false;
   } else if (spawnPoints.get(0) != 0 && frameCount % spawnPoints.get(0) == 0) {
@@ -238,7 +220,10 @@ void addFaller() {
   }
 }
 
-ArrayList<Integer> readFile() {
+ArrayList<Integer> readFile(String filename) { //reads a file to find when to spawn falling objects
+  reader = createReader(filename);
+
+
   ArrayList<Integer> data = new ArrayList<Integer>();
   String line;
   
@@ -261,4 +246,58 @@ ArrayList<Integer> readFile() {
   }
   fileRead = true;
   return data;
+}
+
+void playGame() {//plays the game
+  if(!fileRead) { //reads the file once
+    spawnPoints = readFile("input.txt");
+  }
+  
+  if(spawn) { //stops spawning falling objects if the file is empty
+    addFaller();
+  }
+  
+  if(fallers.size() == 0 && !spawn) { //ends the game once all falling objects are off screen
+    gameOver = true;
+  }
+  
+  background(100, 100, 100);
+  strokeWeight(0);
+  fill(255, 0, 0);
+  ellipse(targetPos.x, targetPos.y, siz.x, siz.y);
+  
+  fill(255);
+  text(messages[currentMessage], width - 100, 25);
+  text((int)score, width - 100, 50);
+  
+  scoreBar();
+  
+  if(!gameOver) {
+    for (int i = 0; i < fallers.size(); i++) {
+      fallers.get(i).fall(colours[currentColours.get(i)]);
+      closingRing(targetPos, fallers.get(i).pos);
+      if (fallers.get(i).isGone() == true) {
+        fallers.remove(i);
+        currentColours.remove(i);
+        pressed.remove(i);
+      }
+    }
+  }
+}
+
+void scoreBar() {//draws a bar based on the score multiplier
+  noFill();
+  strokeWeight(5);
+  stroke(colours[currentBar]);
+  rect(25, 25, 50, height - 50);
+  scoreMultiplier = pow(2, hitStreak);
+  
+  noStroke();
+  fill(outlineColours[currentBar]);
+  float barTop = map(hitStreak, 0, 4, height-25, 25);
+  
+  rect(25, barTop, 50, height-25-barTop);
+  textSize(50);
+  fill(255);
+  text((int)scoreMultiplier, 100, 40);
 }
