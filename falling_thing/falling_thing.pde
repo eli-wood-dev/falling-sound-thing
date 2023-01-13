@@ -108,7 +108,6 @@ void checkFaller () { //checks if a faller can be pressed and how far it is
       hitStreak++;
       break;
   }
-  hitStreak = constrain(hitStreak, 0, 4);
 }
 
 int assess(PVector p) { //assesses how close to the target a falling object is
@@ -123,8 +122,8 @@ int assess(PVector p) { //assesses how close to the target a falling object is
   return value;
 }
 
-void closingRing(PVector posA, PVector p) { //creates the ring that closes around the center circle
-  if (p.y < targetPos.y) {
+void closingRing(PVector posA, PVector p, boolean pressed) { //creates the ring that closes around the center circle
+  if (p.y < targetPos.y && p.y > height/2 && !pressed) {
     PVector sizA = new PVector(0, 0);
     
     float dist = targetPos.dist(p);
@@ -267,16 +266,19 @@ void playGame() {//plays the game
   ellipse(targetPos.x, targetPos.y, siz.x, siz.y);
   
   fill(255);
-  text(messages[currentMessage], width - 100, 25);
-  text((int)score, width - 100, 50);
+  text(messages[currentMessage], width - 150, 50);
+  text((int)score, width - 150, 100);
   
   scoreBar();
   
   if(!gameOver) {
     for (int i = 0; i < fallers.size(); i++) {
       fallers.get(i).fall(colours[currentColours.get(i)]);
-      closingRing(targetPos, fallers.get(i).pos);
+      closingRing(targetPos, fallers.get(i).pos, pressed.get(i));
       if (fallers.get(i).isGone() == true) {
+        if(!pressed.get(i)) { //checks if the faller has not been pressed
+          hitStreak--;
+        }
         fallers.remove(i);
         currentColours.remove(i);
         pressed.remove(i);
@@ -290,6 +292,7 @@ void scoreBar() {//draws a bar based on the score multiplier
   strokeWeight(5);
   stroke(colours[currentBar]);
   rect(25, 25, 50, height - 50);
+  hitStreak = constrain(hitStreak, 0, 4);
   scoreMultiplier = pow(2, hitStreak);
   
   noStroke();
