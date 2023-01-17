@@ -32,10 +32,10 @@ String [] messages = {
 };
 
 color [] colours = {
-  color(0, 255, 0, 50),
-  color(150, 150, 0, 50),
-  color(255, 0, 0, 50),
-  color(0, 0, 255, 50)
+  color(0, 255, 0, 100),
+  color(150, 150, 0, 100),
+  color(255, 0, 0, 100),
+  color(0, 0, 255, 100)
 };
 
 color [] outlineColours = {
@@ -65,8 +65,8 @@ void setup() {
   fallers = new ArrayList<Faller>();
   currentColours = new ArrayList<Integer>();
   pressed = new ArrayList<Boolean>();
-  //size(500, 750);
-  fullScreen();
+  size(500, 750);
+  //fullScreen();
   textSize(25);
   pos = new PVector(width/2, 0);
   siz = new PVector(100, 100);
@@ -82,8 +82,8 @@ void setup() {
   
   imageMode(CENTER);
   
-  stick = loadImage("stick0.png"); //change the number to one to add outline
-  drum = loadImage("drum0.png"); //^
+  stick = loadImage("stick1.png"); //change the number to one to add outline
+  drum = loadImage("drum1.png"); //^
 }
 
 void keyPressed() {
@@ -256,6 +256,11 @@ ArrayList<Integer> readFile(String filename) { //reads a file to find when to sp
       }
     }
   }
+  
+  for(int i = 0; i < data.size(); i++) {
+    data.set(i, convertToFrames(data.get(i)));
+  }
+  
   fileRead = true;
   return data;
 }
@@ -317,4 +322,10 @@ void scoreBar() {//draws a bar based on the score multiplier
   textSize(50);
   fill(255);
   text((int)scoreMultiplier, 100, 40);
+}
+
+int convertToFrames(int timestamp) { //converts a number from a millisecodn timestamp to a frame timestamp
+  timestamp = round(timestamp/1000*60);
+  
+  return timestamp;
 }

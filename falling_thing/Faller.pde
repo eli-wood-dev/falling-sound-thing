@@ -30,7 +30,7 @@ public class Faller {
     fill(colour);
     ellipse(pos.x, pos.y, siz.x, siz.y);
     if(hasImage) {
-      image(image, pos.x, pos.y, siz.x/1.5, siz.y/1.5);
+      image(image, pos.x, pos.y, siz.x, siz.y);
     }
   }
   
