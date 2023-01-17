@@ -32,10 +32,10 @@ String [] messages = {
 };
 
 color [] colours = {
-  color(0, 255, 0, 100),
-  color(150, 150, 0, 100),
-  color(255, 0, 0, 100),
-  color(0, 0, 255, 100)
+  color(0, 255, 0, 50),
+  color(150, 150, 0, 50),
+  color(255, 0, 0, 50),
+  color(0, 0, 255, 50)
 };
 
 color [] outlineColours = {
@@ -53,7 +53,15 @@ ArrayList<Integer> spawnPoints;
 
 AudioPlayer [] sound = new AudioPlayer[3];
 
+PImage stick;
+PImage drum;
+
+
+
+
 void setup() {
+  noCursor(); //hides the cursor
+  
   fallers = new ArrayList<Faller>();
   currentColours = new ArrayList<Integer>();
   pressed = new ArrayList<Boolean>();
@@ -71,6 +79,11 @@ void setup() {
   for (int i = 0; i < sound.length; i++) {
     sound[i] = minim.loadFile("sound"+i+".wav");
   }
+  
+  imageMode(CENTER);
+  
+  stick = loadImage("stick0.png"); //change the number to one to add outline
+  drum = loadImage("drum0.png"); //^
 }
 
 void keyPressed() {
@@ -207,12 +220,12 @@ void addFaller() { //adds a new falling object at specific intervals
   if(spawnPoints.size() == 0) {
     spawn = false;
   } else if (spawnPoints.get(0) != 0 && frameCount % spawnPoints.get(0) == 0) {
-    fallers.add(new Faller(pos, siz));
+    fallers.add(new Faller(pos, siz, stick));
     currentColours.add(3);
     pressed.add(false);
     spawnPoints.remove(0);
   } else if(spawnPoints.get(0) == 0) {
-    fallers.add(new Faller(pos, siz));
+    fallers.add(new Faller(pos, siz, stick));
     currentColours.add(3);
     pressed.add(false);
     spawnPoints.remove(0);
@@ -263,7 +276,8 @@ void playGame() {//plays the game
   background(100, 100, 100);
   strokeWeight(0);
   fill(255, 0, 0);
-  ellipse(targetPos.x, targetPos.y, siz.x, siz.y);
+  //ellipse(targetPos.x, targetPos.y, siz.x, siz.y);
+  image(drum, targetPos.x, targetPos.y, siz.x, siz.y);
   
   fill(255);
   text(messages[currentMessage], width - 150, 50);
