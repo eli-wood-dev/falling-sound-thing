@@ -4,15 +4,18 @@ public class Faller {
   boolean gone = false;
   PImage image;
   boolean hasImage = false;
+  float speed;
   
-  public Faller(PVector pos, PVector siz) {
+  public Faller(PVector pos, PVector siz, float speed) {
     this.pos = pos.copy();
     this.siz = siz.copy();
+    this.speed = speed;
   }
   
-  public Faller(PVector pos, PVector siz, PImage image) {
+  public Faller(PVector pos, PVector siz, PImage image, float speed) {
     this.pos = pos.copy();
     this.siz = siz.copy();
+    this.speed = speed;
     this.image = image;
     hasImage = true;
   }
@@ -20,7 +23,7 @@ public class Faller {
   
   void fall(color colour) {
     if (pos.y - siz.y <= height) {
-      pos.y += 5;
+      pos.y += speed;
     } else {
       gone = true;
     }

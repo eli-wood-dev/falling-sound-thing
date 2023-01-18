@@ -7,11 +7,14 @@ PVector siz;
 PVector targetPos;
 PVector targetSize;
 PVector otherCircleSize;
+float speed = 7.5;
 int maxDist = 200;
 Minim minim;
 int currentColour = 3;
 int currentMessage = 3;
 //int fallerFrequency = 30;
+
+int frameNum = 0;
 
 int nextSpawnPoint = 0;
 
@@ -56,7 +59,7 @@ AudioPlayer [] sound = new AudioPlayer[3];
 PImage stick;
 PImage drum;
 
-
+String currentSong = "esganye";
 
 
 void setup() {
@@ -97,6 +100,7 @@ void mousePressed() {
 }
 
 void checkFaller () { //checks if a faller can be pressed and how far it is
+  frameNum = 0;
   int m;
   if (getLowestFaller(fallers, pressed) == null) {
     m = 2;
@@ -220,12 +224,12 @@ void addFaller() { //adds a new falling object at specific intervals
   if(spawnPoints.size() == 0) {
     spawn = false;
   } else if (spawnPoints.get(0) != 0 && frameCount % spawnPoints.get(0) == 0) {
-    fallers.add(new Faller(pos, siz, stick));
+    fallers.add(new Faller(pos, siz, stick, speed));
     currentColours.add(3);
     pressed.add(false);
     spawnPoints.remove(0);
   } else if(spawnPoints.get(0) == 0) {
-    fallers.add(new Faller(pos, siz, stick));
+    fallers.add(new Faller(pos, siz, stick, speed));
     currentColours.add(3);
     pressed.add(false);
     spawnPoints.remove(0);
@@ -236,7 +240,8 @@ ArrayList<Integer> readFile(String filename) { //reads a file to find when to sp
   reader = createReader(filename);
 
 
-  ArrayList<Integer> data = new ArrayList<Integer>();
+  ArrayList<Float> data = new ArrayList<Float>();
+  ArrayList<Integer> newData = new ArrayList<Integer>();
   String line;
   
   while(true) {
@@ -250,7 +255,7 @@ ArrayList<Integer> readFile(String filename) { //reads a file to find when to sp
       break;
     } else {
       try {
-        data.add(Integer.parseInt(line));
+        data.add(Float.parseFloat(line));
       } catch(Exception e) {
         println(e);
       }
@@ -258,16 +263,17 @@ ArrayList<Integer> readFile(String filename) { //reads a file to find when to sp
   }
   
   for(int i = 0; i < data.size(); i++) {
-    data.set(i, convertToFrames(data.get(i)));
+    newData.add(convertToFrames(data.get(i)));
   }
   
   fileRead = true;
-  return data;
+  return newData;
 }
 
 void playGame() {//plays the game
+  frameNum++;
   if(!fileRead) { //reads the file once
-    spawnPoints = readFile("input.txt");
+    spawnPoints = readFile(currentSong +"/" + currentSong + "_peak_times.txt");
   }
   
   if(spawn) { //stops spawning falling objects if the file is empty
@@ -284,12 +290,6 @@ void playGame() {//plays the game
   //ellipse(targetPos.x, targetPos.y, siz.x, siz.y);
   image(drum, targetPos.x, targetPos.y, siz.x, siz.y);
   
-  fill(255);
-  text(messages[currentMessage], width - 150, 50);
-  text((int)score, width - 150, 100);
-  
-  scoreBar();
-  
   if(!gameOver) {
     for (int i = 0; i < fallers.size(); i++) {
       fallers.get(i).fall(colours[currentColours.get(i)]);
@@ -297,6 +297,8 @@ void playGame() {//plays the game
       if (fallers.get(i).isGone() == true) {
         if(!pressed.get(i)) { //checks if the faller has not been pressed
           hitStreak--;
+          currentMessage = 2;
+          frameNum = 0;
         }
         fallers.remove(i);
         currentColours.remove(i);
@@ -304,6 +306,20 @@ void playGame() {//plays the game
       }
     }
   }
+  
+  if(frameNum < 15) {
+    int nextSize = (int)map(frameNum, 0, 14, 50, 100);
+    int nextOpacity = (int)map(frameNum,  0, 14, 255, 0);
+    
+    drawMessage(nextSize, nextOpacity);
+  }
+  
+  textSize(50);
+  fill(255);
+  text((int)score, width - 150, 50);
+  
+  scoreBar();
+  
 }
 
 void scoreBar() {//draws a bar based on the score multiplier
@@ -324,8 +340,15 @@ void scoreBar() {//draws a bar based on the score multiplier
   text((int)scoreMultiplier, 100, 40);
 }
 
-int convertToFrames(int timestamp) { //converts a number from a millisecodn timestamp to a frame timestamp
-  timestamp = round(timestamp/1000*60);
+int convertToFrames(float timestamp) { //converts a number from a second timestamp to a frame timestamp
+  timestamp = round(timestamp*60);
   
-  return timestamp;
+  return (int)timestamp;
+}
+
+void drawMessage(int nextSize, int nextOpacity) {
+  fill(255, 255, 255, nextOpacity);
+  textAlign(CENTER);
+  textSize(nextSize);
+  text(messages[currentMessage], width/2, height/2);
 }
