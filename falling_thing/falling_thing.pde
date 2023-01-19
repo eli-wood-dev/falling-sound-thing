@@ -19,7 +19,8 @@ int frameNum = 0;
 int nextSpawnPoint = 0;
 
 boolean fileRead = false;
-boolean gameOver = false;
+boolean gameOver = false; //did you lose
+boolean playing = false; //did you start the game
 boolean spawn = true;
 
 float score = 0;
@@ -61,13 +62,17 @@ PImage drum;
 
 String currentSong = "esganye";
 
+Button menu; //returns to menu
+Button retry;
+Button start;
+ArrayList<Button> songs;
+
 
 void setup() {
-  noCursor(); //hides the cursor
-  
   fallers = new ArrayList<Faller>();
   currentColours = new ArrayList<Integer>();
   pressed = new ArrayList<Boolean>();
+  songs = new ArrayList<Button>();
   size(500, 750);
   //fullScreen();
   textSize(25);
@@ -76,6 +81,12 @@ void setup() {
   targetSize = new PVector(100, 100);
   targetPos = new PVector(width/2, height - 100);
   otherCircleSize = new PVector(0, 0);
+  
+  menu = new Button(new PVector(width/2, height/4), new PVector(150, 100), color(255, 0, 0), "return to menu");
+  retry = new Button(new PVector(width/2, height/4*3), new PVector(150, 100), color(255, 0, 0), "retry level");
+  start = new Button(new PVector(width/2, height/4), new PVector(150, 100), color(255, 0, 0), "Start game");
+  songs.add(new Button(new PVector(width/2, height/2), new PVector(150, 100), color(255, 0, 0), "esganye"));
+  songs.add(new Button(new PVector(width/2, height/4*3), new PVector(150, 100), color(255, 0, 0), "rabbit dance"));
   
   //loads sounds
   minim = new Minim(this);
@@ -97,6 +108,7 @@ void keyPressed() {
 
 void mousePressed() {
   checkFaller();
+  checkButtons();
 }
 
 void checkFaller () { //checks if a faller can be pressed and how far it is
@@ -193,8 +205,12 @@ int getLowestFallerNum(ArrayList<Faller> fallers, ArrayList<Boolean> pressed) { 
 }
 
 void draw () {
-  if(!gameOver) {
+  if(!playing && !gameOver) {
+    startMenu();
+  } else if(!gameOver) {
     playGame();
+  } else {
+    endScreen();
   }
 }
 
@@ -271,6 +287,7 @@ ArrayList<Integer> readFile(String filename) { //reads a file to find when to sp
 }
 
 void playGame() {//plays the game
+  noCursor(); //hides the cursor
   frameNum++;
   if(!fileRead) { //reads the file once
     spawnPoints = readFile(currentSong +"/" + currentSong + "_peak_times.txt");
@@ -282,6 +299,7 @@ void playGame() {//plays the game
   
   if(fallers.size() == 0 && !spawn) { //ends the game once all falling objects are off screen
     gameOver = true;
+    playing = false;
   }
   
   background(100, 100, 100);
@@ -323,6 +341,7 @@ void playGame() {//plays the game
 }
 
 void scoreBar() {//draws a bar based on the score multiplier
+  rectMode(CORNER);
   noFill();
   strokeWeight(5);
   stroke(colours[currentBar]);
@@ -351,4 +370,48 @@ void drawMessage(int nextSize, int nextOpacity) {
   textAlign(CENTER);
   textSize(nextSize);
   text(messages[currentMessage], width/2, height/2);
+}
+
+void startMenu() {
+  cursor();
+  background(100, 100, 100);
+  start.draw();
+  for(Button b : songs) {
+    b.draw();
+  }
+  if(start.isPressed()) {
+    playing = true;
+  }
+  if(songs.get(0).isPressed()) {
+    currentSong = "esganye";
+  }
+  if(songs.get(1).isPressed()) {
+    currentSong = "rabbit_dance";
+  }
+}
+
+void endScreen() {
+  playing = false;
+  gameOver = true;
+  cursor();
+  background(100, 100, 100);
+  text(score, width/2, 50);
+  retry.draw();
+  menu.draw();
+  if(menu.isPressed()) {
+    gameOver = false;
+  }
+  if(retry.isPressed()) {
+    gameOver = false;
+    playing = true;
+  }
+}
+
+void checkButtons() { //checks if each button is pressed
+  for(Button b : songs) {
+    b.check();
+  }
+  menu.check();
+  retry.check();
+  start.check();
 }
