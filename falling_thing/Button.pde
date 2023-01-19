@@ -23,8 +23,9 @@ public class Button {
     fill(colour);
     rect(pos.x, pos.y, siz.x, siz.y);
     if(text != null) {
-      textAlign(CENTER);
+      textAlign(CENTER, CENTER);
       fill(0);
+      textSize(25);
       text(text, pos.x, pos.y);
     }
   }

@@ -82,11 +82,11 @@ void setup() {
   targetPos = new PVector(width/2, height - 100);
   otherCircleSize = new PVector(0, 0);
   
-  menu = new Button(new PVector(width/2, height/4), new PVector(150, 100), color(255, 0, 0), "return to menu");
-  retry = new Button(new PVector(width/2, height/4*3), new PVector(150, 100), color(255, 0, 0), "retry level");
+  menu = new Button(new PVector(width/2, height/4), new PVector(150, 100), color(255, 0, 0), "Menu");
+  retry = new Button(new PVector(width/2, height/4*3), new PVector(150, 100), color(255, 0, 0), "Retry level");
   start = new Button(new PVector(width/2, height/4), new PVector(150, 100), color(255, 0, 0), "Start game");
-  songs.add(new Button(new PVector(width/2, height/2), new PVector(150, 100), color(255, 0, 0), "esganye"));
-  songs.add(new Button(new PVector(width/2, height/4*3), new PVector(150, 100), color(255, 0, 0), "rabbit dance"));
+  songs.add(new Button(new PVector(width/2, height/2), new PVector(150, 100), color(255, 0, 0), "Esganye"));
+  songs.add(new Button(new PVector(width/2, height/4*3), new PVector(150, 100), color(255, 0, 0), "Rabbit dance"));
   
   //loads sounds
   minim = new Minim(this);
@@ -108,6 +108,8 @@ void keyPressed() {
 
 void mousePressed() {
   checkFaller();
+}
+void mouseReleased() {
   checkButtons();
 }
 
@@ -332,6 +334,7 @@ void playGame() {//plays the game
     drawMessage(nextSize, nextOpacity);
   }
   
+  textAlign(TOP, LEFT);
   textSize(50);
   fill(255);
   text((int)score, width - 150, 50);
@@ -367,7 +370,7 @@ int convertToFrames(float timestamp) { //converts a number from a second timesta
 
 void drawMessage(int nextSize, int nextOpacity) {
   fill(255, 255, 255, nextOpacity);
-  textAlign(CENTER);
+  textAlign(CENTER, CENTER);
   textSize(nextSize);
   text(messages[currentMessage], width/2, height/2);
 }
@@ -388,6 +391,8 @@ void startMenu() {
   if(songs.get(1).isPressed()) {
     currentSong = "rabbit_dance";
   }
+  
+  text("current song: " + currentSong, width/2, 25);
 }
 
 void endScreen() {
@@ -395,15 +400,25 @@ void endScreen() {
   gameOver = true;
   cursor();
   background(100, 100, 100);
-  text(score, width/2, 50);
+  text((int)score, width/2, 50);
   retry.draw();
   menu.draw();
   if(menu.isPressed()) {
     gameOver = false;
+    score = 0;
+    hitStreak = 0;
+    scoreMultiplier = 0;
+    spawn = true;
+    fileRead = false;
   }
   if(retry.isPressed()) {
     gameOver = false;
     playing = true;
+    score = 0;
+    hitStreak = 0;
+    scoreMultiplier = 0;
+    spawn = true;
+    fileRead = false;
   }
 }
 
