@@ -73,8 +73,8 @@ void setup() {
   currentColours = new ArrayList<Integer>();
   pressed = new ArrayList<Boolean>();
   songs = new ArrayList<Button>();
-  size(500, 750);
-  //fullScreen();
+  //size(500, 750);
+  fullScreen();
   textSize(25);
   pos = new PVector(width/2, 0);
   siz = new PVector(100, 100);
