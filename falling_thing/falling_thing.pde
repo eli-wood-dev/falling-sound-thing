@@ -102,12 +102,16 @@ void setup() {
 
 void keyPressed() {
   if (key == ' ') {
-    checkFaller();
+    if (playing && !gameOver) {
+      checkFaller();
+    }
   }
 }
 
 void mousePressed() {
-  checkFaller();
+  if (playing && !gameOver) {
+    checkFaller();
+  }
 }
 void mouseReleased() {
   checkButtons();
