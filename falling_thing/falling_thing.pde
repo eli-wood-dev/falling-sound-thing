@@ -56,6 +56,7 @@ ArrayList<Boolean>pressed;
 ArrayList<Integer> spawnPoints;
 
 AudioPlayer [] sound = new AudioPlayer[3];
+AudioPlayer harmonic; //replace with array when multiple versions of sounds are made
 
 PImage stick;
 PImage drum;
@@ -93,6 +94,7 @@ void setup() {
   for (int i = 0; i < sound.length; i++) {
     sound[i] = minim.loadFile("sound"+i+".wav");
   }
+  harmonic = minim.loadFile("harmonic00.wav");
   
   imageMode(CENTER);
   
@@ -127,8 +129,11 @@ void checkFaller () { //checks if a faller can be pressed and how far it is
     currentColours.set(getLowestFallerNum(fallers, pressed), m);
     pressed.set(getLowestFallerNum(fallers, pressed), true);
   }
+  //add variation to sounds with random numbers
   sound[m].play();
   sound[m].rewind();
+  harmonic.play();
+  harmonic.rewind();
   currentMessage = m;
   score += invert(m) * 100 * scoreMultiplier;
   
@@ -238,6 +243,7 @@ void stop() //closes all sounds
   for (int i = 0; i < sound.length; i++) {
     sound[i].close();
   }
+  harmonic.close();
   minim.stop();
   super.stop();
 }
